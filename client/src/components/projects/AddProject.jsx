@@ -22,7 +22,11 @@ import {
   TabPanels,
   Tabs,
   useDisclosure,
+  Text,
+  VStack,
+  HStack,
 } from "@chakra-ui/react";
+import { DownloadIcon } from "@chakra-ui/icons";
 import { Field, Form, Formik } from "formik";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import AuthService from "@/services/auth-service";
@@ -55,6 +59,7 @@ const AddProject = ({ isOpen, onClose, projectInfo, mutateServer }) => {
   const [projectDescription, setProjectDescription] = useState("");
   const [projectInfoData, setProjectInfoData] = useState(CreateProjectData);
   const [isProjectAuthor, setIsProjectAuthor] = useState(isNewProject);
+  const [attachmentFile, setAttachmentFile] = useState(null);
 
   const allUsersSWR = useApi(MiscellaneousService.getUsers(), isOpen);
 
@@ -96,11 +101,22 @@ const AddProject = ({ isOpen, onClose, projectInfo, mutateServer }) => {
     setProjectInfoData(CreateProjectData);
     setProjectDescription("");
     setSelectedAssigneeIds([]);
+    setAttachmentFile(null);
     onClose();
   };
 
   const onHandleFormSubmit = async (data) => {
     try {
+
+
+
+
+      // Validate assignees before submission
+      if (selectedAssigneeIds.length === 0) {
+        setError("Assignees required");
+        return;
+      }
+
       const projectData = { ...data };
       projectData.assignees = selectedAssigneeIds;
       projectData.description = projectDescription;
@@ -108,12 +124,13 @@ const AddProject = ({ isOpen, onClose, projectInfo, mutateServer }) => {
       let apiRequestInfo = {};
 
       if (isNewProject) {
-        apiRequestInfo = ProjectService.createProject(projectData);
+        apiRequestInfo = ProjectService.createProject(projectData, attachmentFile);
       } else {
         projectData._id = projectInfo._id;
         apiRequestInfo = ProjectService.updateProject(
           projectData,
-          projectInfo._id
+          projectInfo._id,
+          attachmentFile
         );
       }
 
@@ -183,6 +200,7 @@ const AddProject = ({ isOpen, onClose, projectInfo, mutateServer }) => {
                               </FormErrorMessage>
                             </FormControl>
 
+
                             <FormControl>
                               <FormLabel>Description</FormLabel>
                               <RichTextEditor
@@ -191,6 +209,63 @@ const AddProject = ({ isOpen, onClose, projectInfo, mutateServer }) => {
                                 disabled={!isProjectAuthor}
                               />
                             </FormControl>
+
+                            <FormControl>
+                              <FormLabel>Attachment</FormLabel>
+                              <Input
+                                type="file"
+                                onChange={(e) => setAttachmentFile(e.target.files[0])}
+                                disabled={!isProjectAuthor}
+                                accept="image/png,image/jpeg,image/jpg,application/pdf"
+                              />
+                              <Text fontSize="xs" color="gray.500" mt={1}>
+                                Allowed: PNG, JPG, JPEG, PDF
+                              </Text>
+                            </FormControl>
+
+                            {attachmentFile && (
+                              <Box p={2} bg="green.100" borderRadius="md">
+                                <Text fontSize="sm" color="green.800">
+                                  ✓ File selected: {attachmentFile.name}
+                                </Text>
+                              </Box>
+                            )}
+
+                            {!isNewProject && projectInfo?.attachments?.length > 0 && (
+                              <Box p={3} bg="secondary" borderRadius="md">
+                                <Text fontSize="sm" fontWeight={600} mb={2} color="gray.200">
+                                  Existing Attachments:
+                                </Text>
+                                <VStack align="start" spacing={2}>
+                                  {projectInfo.attachments.map((att, idx) => (
+                                    <HStack key={idx} w="100%" justify="space-between" spacing={3} p={2} borderRadius="md">
+                                      <HStack spacing={3} maxW="80%">
+                                        <Text fontSize="sm" color="gray.200">📎</Text>
+                                        <Text fontSize="sm" isTruncated maxW="full" color="gray.200">
+                                          {att.fileName}
+                                        </Text>
+                                      </HStack>
+
+                                      <Button
+                                        size="sm"
+                                        leftIcon={<DownloadIcon />}
+                                        colorScheme="blue"
+                                        variant="outline"
+                                        color="white"
+                                        onClick={() => {
+                                          const link = document.createElement("a");
+                                          link.href = `http://localhost:5000/${att.filePath}`;
+                                          link.download = att.fileName;
+                                          link.click();
+                                        }}
+                                      >
+                                        Download
+                                      </Button>
+                                    </HStack>
+                                  ))}
+                                </VStack>
+                              </Box>
+                            )}
                           </Flex>
                         </Box>
                       </Form>

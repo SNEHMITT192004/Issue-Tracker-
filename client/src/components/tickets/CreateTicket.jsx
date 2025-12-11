@@ -47,6 +47,7 @@ const CreateTicket = ({
   const [ticketInfo, setTicketInfo] = useState(CreateTicketData);
   const [error, setError] = useState("");
   const [project, setProject] = useState(projectInfo);
+  const [attachmentFile, setAttachmentFile] = useState(null);
 
   const projectSWR = useApi(
     ProjectService.getProjectInfo(ticket?.projectId._id),
@@ -102,6 +103,7 @@ const CreateTicket = ({
     setTicketDescription("");
     setTicketInfo(CreateTicketData);
     setError("");
+    setAttachmentFile(null);
     onClose();
   };
 
@@ -114,9 +116,9 @@ const CreateTicket = ({
       let apiRequestInfo = {};
 
       if (isNewTicket) {
-        apiRequestInfo = TicketService.createTicket(project._id, ticketData);
+        apiRequestInfo = TicketService.createTicket(project._id, ticketData, attachmentFile);
       } else {
-        apiRequestInfo = TicketService.updateTicket(project._id, ticketData);
+        apiRequestInfo = TicketService.updateTicket(project._id, ticketData, attachmentFile);
       }
 
       await mutateServer(apiRequestInfo);
@@ -170,6 +172,9 @@ const CreateTicket = ({
                   error={error}
                   ticketDescription={ticketDescription}
                   setTicketDescription={setTicketDescription}
+                  attachmentFile={attachmentFile}
+                  setAttachmentFile={setAttachmentFile}
+                  existingAttachments={ticket?.attachments || []}
                 />
               </TabPanel>
 

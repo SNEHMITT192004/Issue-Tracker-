@@ -183,7 +183,7 @@ const CreateTicketType = ({ isOpen, onClose, ticketType, mutateServer }) => {
                   </Flex>
 
                   <FormControl>
-                    <FormLabel fontWeight="bold" font color="inputLabel">
+                    <FormLabel fontWeight="bold" color="inputLabel">
                       Select an Icon
                       <Link
                         href="https://react-icons.github.io/react-icons/icons?name=bs"

@@ -27,7 +27,15 @@ const ProjectSchema = mongoose.Schema({
     updatedOn: {
         type: Date,
         default: Date.now()
-    }
+    },
+    attachments: [
+  {
+    fileName: String,
+    filePath: String,
+    uploadedAt: { type: Date, default: Date.now }
+  }
+],
+
 });
 
 export default mongoose.model("Project", ProjectSchema);

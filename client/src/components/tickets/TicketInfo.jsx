@@ -8,7 +8,13 @@ import {
   Input,
   Select,
   Text,
+  Button,
+  Box,
+  VStack,
+  HStack,
+  Icon,
 } from "@chakra-ui/react";
+import { DownloadIcon } from "@chakra-ui/icons";
 import { Field, Form, Formik } from "formik";
 import moment from "moment/moment";
 import React from "react";
@@ -29,6 +35,9 @@ const TicketInfo = ({
   formRef,
   ticketDescription,
   setTicketDescription,
+  attachmentFile,
+  setAttachmentFile,
+  existingAttachments = [],
 }) => {
   const canManageTickets = usePermissions(Permissions.canManageTickets);
   const ticketTypesSWR = useApi(MiscellaneousService.getAllTicketType());
@@ -152,6 +161,63 @@ const TicketInfo = ({
                     : ""}
                 </Text>
               </Flex>
+
+              <FormControl mt={4}>
+                <FormLabel>Attachment</FormLabel>
+                <Input
+                  type="file"
+                  onChange={(e) => setAttachmentFile(e.target.files[0])}
+                  disabled={!canManageTickets}
+                  accept="image/png,image/jpeg,image/jpg,application/pdf"
+                />
+                <Text fontSize="xs" color="gray.500" mt={1}>
+                  Allowed: PNG, JPG, JPEG, PDF
+                </Text>
+              </FormControl>
+
+              {attachmentFile && (
+                <Box mt={2} p={2} bg="green.100" borderRadius="md">
+                  <Text fontSize="sm" color="green.800">
+                    ✓ File selected: {attachmentFile.name}
+                  </Text>
+                </Box>
+              )}
+
+              {existingAttachments.length > 0 && (
+                <Box mt={4} p={3} bg="secondary" borderRadius="md">
+                  <Text fontSize="sm" fontWeight={600} mb={2} color="gray.200">
+                    Existing Attachments:
+                  </Text>
+                  <VStack align="start" spacing={2}>
+                    {existingAttachments.map((att, idx) => (
+                      <HStack key={idx} w="100%" justify="space-between" spacing={3} p={2} borderRadius="md">
+                        <HStack spacing={3} maxW="80%">
+                          <Text fontSize="sm" color="gray.200">📎</Text>
+                          <Text fontSize="sm" isTruncated maxW="full" color="gray.200">
+                            {att.fileName}
+                          </Text>
+                        </HStack>
+
+                        <Button
+                          size="sm"
+                          leftIcon={<DownloadIcon />}
+                          colorScheme="blue"
+                          variant="outline"
+                          color="white"
+                          onClick={() => {
+                            const link = document.createElement("a");
+                            link.href = `http://localhost:5000/${att.filePath}`;
+                            link.download = att.fileName;
+                            link.click();
+                          }}
+                        >
+                          Download
+                        </Button>
+                      </HStack>
+                    ))}
+                  </VStack>
+                </Box>
+              )}
             </Flex>
           </Flex>
         </Form>

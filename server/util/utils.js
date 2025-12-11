@@ -26,8 +26,11 @@ export const canPerformAction = async (permissionCheck, user) => {
 
 export const validateObjectId = (id, message, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(403).json({ message });
+        res.status(403).json({ message });
+        return false;
     }
+
+    return true;
 };
 
 

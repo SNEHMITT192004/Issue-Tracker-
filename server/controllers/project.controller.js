@@ -31,6 +31,16 @@ export const addProject = async (req, res) => {
 
         //Create project
         let newProject = await Project.create({ title, description, authorId: userId, assignees });
+
+        // Add attachment if file was uploaded
+        if (req.file) {
+            newProject.attachments.push({
+                fileName: req.file.filename,
+                filePath: req.file.path
+            });
+            await newProject.save();
+        }
+
         newProject = await newProject.populate([
             { path: "authorId", select: ["firstName", "lastName"] }
         ]);
@@ -160,6 +170,14 @@ export const updateProject = async (req, res) => {
         project.assignees = Array.from(assigneesSet);
         project.updatedOn = Date.now();
 
+        // Add attachment if file was uploaded
+        if (req.file) {
+            project.attachments.push({
+                fileName: req.file.filename,
+                filePath: req.file.path
+            });
+        }
+
         let updatedProject = await project.save({ new: true });
 
         updatedProject = await updatedProject.populate([
@@ -274,5 +292,41 @@ export const getProjectStat = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Internal server issue" });
+    }
+};
+
+export const addProjectAttachment = async (req, res) => {
+    const { projectId } = req.params;
+    const userId = req.user._id;
+
+    try {
+        // Must belong to project
+        const project = await Project.findOne({ _id: projectId, assignees: userId });
+
+        if (!project) {
+            return res.status(404).json({ message: "Project not found or not authorized" });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+
+        const fileData = {
+            fileName: req.file.originalname,
+            filePath: req.file.path,
+            uploadedAt: new Date()
+        };
+
+        project.attachments.push(fileData);
+        await project.save();
+
+        return res.json({
+            message: "File uploaded successfully",
+            attachment: fileData
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 };

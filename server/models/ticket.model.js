@@ -50,6 +50,14 @@ const TicketSchema = mongoose.Schema({
         type: Date,
         default: Date.now()
     },
+    attachments: [
+  {
+    fileName: String,
+    filePath: String,
+    uploadedAt: { type: Date, default: Date.now }
+  }
+],
+
     updatedOn: {
         type: Date,
         default: Date.now()

@@ -42,7 +42,7 @@ export const ManageUserSchema = Yup.object().shape({
 
 
 export const CreateProjectSchema = Yup.object().shape({
-    title: Yup.string().required("Required"),
+    title: Yup.string().required("Required")
 });
 
 export const CreateProjectData = {

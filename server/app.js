@@ -16,6 +16,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
+// Serve uploaded files
+app.use("/uploads", express.static("uploads"));
+
 //Middleware
 app.get("/", (_, res) => res.send("Welcome to TrackIt API"));
 app.use('/auth', authRoutes);
